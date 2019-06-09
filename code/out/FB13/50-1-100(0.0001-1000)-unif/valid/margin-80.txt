@@ -1,0 +1,7 @@
+gender	7
+nationality	12
+ethnicity	11
+religion	10
+institution	10
+profession	14
+cause_of_death	12
