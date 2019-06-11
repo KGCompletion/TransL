@@ -2,6 +2,11 @@
 
 The source code of paper "Translating Embedding with Local Connection for Knowledge Graph Completion".
 
+||WN11|FB13|
+|:---|:---|:---|
+|unif|86.1|83.8|
+|bern|86.6|85.6|
+
 ## Data
 We provide FB13 and WN11 datasets used for the task of triplet classification.<br>
 Each dataset in the following format, containing five files:<br>
