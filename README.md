@@ -4,8 +4,8 @@ The source code of paper "Translating Embedding with Local Connection for Knowle
 
 ||WN11|FB13|
 |:---|:---|:---|
-|unif|86.1|83.8|
-|bern|86.6|85.6|
+|unif|0.861|0.838|
+|bern|0.866|0.856|
 
 ## Data
 We provide FB13 and WN11 datasets used for the task of triplet classification.<br>
