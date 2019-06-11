@@ -10,7 +10,7 @@ from torch.utils.data import DataLoader, Dataset
 from _collections import defaultdict
 import numpy as np
 import random
-
+import argparse
 
 class TestDataset(Dataset):
 
@@ -137,10 +137,30 @@ def test(file_name, net_path, test_name, out_path, epoch, margin_dict):
         print(line)
         write(out_path + str(epoch) + '.txt', line)
 
+def get_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-dim', type=int, default=50, help='entity and relation sharing embedding dimension')
+    parser.add_argument('-margin_pos', type=int, default=1, help='margin of positive triplets')
+    parser.add_argument('-margin_neg', type=int, default=5, help='margin of negative triplets')
+    parser.add_argument('-rate', type=float, default=0.005, help='learning rate')
+    parser.add_argument('-batch', type=int, default=100, help='batch size')
+    parser.add_argument('-epoch', type=int, default=150, help='number of training epoch')
+    parser.add_argument('-method', type=str, default='bern', help='stratege of constructing negative triplets')
+    parser.add_argument('-data', type=str, default='WN11', help='dataset of the model')
+    args = parser.parse_args()
+
+    return args
+
 if __name__ == '__main__':
-    file_name = 'WN11'
-    net_name = '20-1-10(0.01-100)-bern'
-    epoch = 750
+    args = get_args()
+
+    file_name = args.data
+    net_name = str(args.dim) + '-' + str(args.margin_pos) + '-' + str(args.margin_neg) + '(' + str(args.rate) + '-' + str(args.batch) + ')-' + args.method
+    epoch = args.epoch
+
+    # file_name = 'WN11'
+    # net_name = '20-1-10(0.01-100)-bern'
+    # epoch = 750
 
     # file_name = 'WN11'
     # net_name = '20-1-10(0.01-100)-unif'

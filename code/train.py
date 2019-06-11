@@ -10,6 +10,7 @@ from torch import optim
 from _collections import defaultdict
 import numpy as np
 import random
+import argparse
 
 
 class TrainDataset(Dataset):
@@ -144,18 +145,17 @@ class TrainDataset(Dataset):
         return self.len
 
 
-def train(dimension, margin1, margin2, nn_lr, batch_size, file_name, neg_type):
-    train_epochs = 800
-    file_dir = file_name + '/' + str(dimension) + '-' + str(margin1) + '-' + str(margin2) + '(' + str(nn_lr) + '-' + str(batch_size) + ')-' + neg_type
+def train(args):
+    file_dir = args.data + '/' + str(args.dim) + '-' + str(args.margin_pos) + '-' + str(args.margin_neg) + '(' + str(args.rate) + '-' + str(args.batch) + ')-' + args.method
     
-    train_dataset = TrainDataset(file_name, neg_type)
-    train_dataloader = DataLoader(train_dataset, shuffle=True, num_workers=5, batch_size=batch_size)
+    train_dataset = TrainDataset(args.data, args.method)
+    train_dataloader = DataLoader(train_dataset, shuffle=True, num_workers=5, batch_size=args.batch)
 
-    net = Network(dimension, train_dataset.entity_len, train_dataset.rel_len)
+    net = Network(args.dim, train_dataset.entity_len, train_dataset.rel_len)
     # net = torch.load('out/' + file_dir + '/net-' + str(500) + '.pt')
     
-    loss_func = ContrastiveLoss(margin1, margin2)
-    optimizer = optim.Adam(net.parameters(), lr=nn_lr)
+    loss_func = ContrastiveLoss(args.margin_pos, args.margin_neg)
+    optimizer = optim.Adam(net.parameters(), lr=args.rate)
 
     if torch.cuda.is_available() == True:
         net = net.cuda()
@@ -163,7 +163,7 @@ def train(dimension, margin1, margin2, nn_lr, batch_size, file_name, neg_type):
     
     start = time.time()
 
-    for epoch in range(train_epochs):
+    for epoch in range(args.epoch):
         epoch_loss = 0
         current_loss = 0
 
@@ -199,7 +199,7 @@ def train(dimension, margin1, margin2, nn_lr, batch_size, file_name, neg_type):
             current_loss += loss.data.item()
             epoch_loss += loss.data.item()
 
-            j = i * batch_size
+            j = i * args.batch
             if j % 20000 == 0:
                 print('%d %d %d%% (%s) %.4f' % (epoch, j, j * 100 / train_dataset.len, timeSince(start), current_loss))
                 current_loss = 0
@@ -217,21 +217,20 @@ def train(dimension, margin1, margin2, nn_lr, batch_size, file_name, neg_type):
 
     print('train done!')
 
-    
+def get_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-dim', type=int, default=50, help='entity and relation sharing embedding dimension')
+    parser.add_argument('-margin_pos', type=int, default=1, help='margin of positive triplets')
+    parser.add_argument('-margin_neg', type=int, default=5, help='margin of negative triplets')
+    parser.add_argument('-rate', type=float, default=0.005, help='learning rate')
+    parser.add_argument('-batch', type=int, default=100, help='batch size')
+    parser.add_argument('-epoch', type=int, default=150, help='number of training epoch')
+    parser.add_argument('-method', type=str, default='bern', help='stratege of constructing negative triplets')
+    parser.add_argument('-data', type=str, default='WN11', help='dataset of the model')
+    args = parser.parse_args()
+
+    return args
 
 if __name__ == '__main__':
-    dimension = 20
-
-    margin1 = 1
-    margin2 = 10
-
-    nn_lr = 0.01
-    batch_size = 100
-
-    file_name = 'WN11'
-    # file_name = 'FB13'
-    
-    # neg_type = 'unif'
-    neg_type = 'bern'
-    
-    train(dimension, margin1, margin2, nn_lr, batch_size, file_name, neg_type)
+    args = get_args()
+    train(args)
