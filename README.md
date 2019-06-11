@@ -34,7 +34,7 @@ You can change the hyper-parameters.
 ## Validation
 Usage: 
 ```python
-python code/valid.py
+python code/valid-tc.py
 ```
 You can change the hyper-parameters.    
 -dim: entity and relation sharing embedding dimension  
@@ -51,7 +51,7 @@ You can change the hyper-parameters.
 ## Testing
 Usage: 
 ```python
-python code/test.py
+python code/test-tc.py
 ```
 You can change the hyper-parameters.    
 -dim: entity and relation sharing embedding dimension  
