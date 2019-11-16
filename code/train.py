@@ -153,11 +153,12 @@ def train(args):
 
     net = Network(args.dim, train_dataset.entity_len, train_dataset.rel_len)
     # net = torch.load('out/' + file_dir + '/net-' + str(500) + '.pt')
+    # net.load_state_dict(torch.load('out/' + file_dir + '/net-' + str(300) + '.pt'))
     
     loss_func = ContrastiveLoss(args.margin_pos, args.margin_neg)
     optimizer = optim.Adam(net.parameters(), lr=args.rate)
 
-    if torch.cuda.is_available() == True:
+    if(torch.cuda.is_available() and args.cuda):
         net = net.cuda()
         loss_func = loss_func.cuda()
     
@@ -170,7 +171,7 @@ def train(args):
         for i, data in enumerate(train_dataloader, 0):
             data_r, data_e, r, t, data_r_neg, data_e_neg, r_neg, t_neg = data
 
-            if torch.cuda.is_available() == True:
+            if(torch.cuda.is_available() and args.cuda):
                 data_r = data_r.cuda()
                 data_e = data_e.cuda()
                 r = r.cuda()
@@ -193,7 +194,7 @@ def train(args):
             loss.backward()
             optimizer.step()
 
-            if torch.cuda.is_available() == True:
+            if(torch.cuda.is_available() and args.cuda):
                 loss = loss.cpu()
 
             current_loss += loss.data.item()
@@ -208,29 +209,34 @@ def train(args):
             os.makedirs('out/' + file_dir)
         
         j = epoch + 1
-        if j % 10 == 0:
+        if j % 50 == 0:
             model_name = 'out/' + file_dir + '/net-' + str(j) + '.pt'
-            torch.save(net, model_name)
+            torch.save(net.state_dict(), model_name)
 
         loss_str = '%.4f' % epoch_loss
         write('out/' + file_dir + '/loss.txt', loss_str)
 
     print('train done!')
 
+
+
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-dim', type=int, default=50, help='entity and relation sharing embedding dimension')
-    parser.add_argument('-margin_pos', type=int, default=1, help='margin of positive triplets')
-    parser.add_argument('-margin_neg', type=int, default=5, help='margin of negative triplets')
-    parser.add_argument('-rate', type=float, default=0.005, help='learning rate')
+    parser.add_argument('-dim', type=int, default=100, help='entity and relation sharing embedding dimension')
+    parser.add_argument('-margin_pos', type=int, default=10, help='margin of positive triplets')
+    parser.add_argument('-margin_neg', type=int, default=15, help='margin of negative triplets')
+    parser.add_argument('-rate', type=float, default=0.001, help='learning rate')
     parser.add_argument('-batch', type=int, default=100, help='batch size')
-    parser.add_argument('-epoch', type=int, default=150, help='number of training epoch')
+    parser.add_argument('-epoch', type=int, default=300, help='number of training epoch')
+    # parser.add_argument('-method', type=str, default='unif', help='stratege of constructing negative triplets')
     parser.add_argument('-method', type=str, default='bern', help='stratege of constructing negative triplets')
-    parser.add_argument('-data', type=str, default='WN11', help='dataset of the model')
+    parser.add_argument('-data', type=str, default='FB15k-237', help='dataset of the model')
+    # parser.add_argument('-data', type=str, default='WN11', help='dataset of the model')
+    # parser.add_argument('-data', type=str, default='FB13', help='dataset of the model')
+    parser.add_argument('-cuda', type=bool, default=True, help='use cuda')
     args = parser.parse_args()
 
     return args
-
 if __name__ == '__main__':
     args = get_args()
     train(args)

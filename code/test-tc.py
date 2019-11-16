@@ -76,11 +76,13 @@ class TestDataset(Dataset):
         return self.len
 
 def test(file_name, net_path, test_name, out_path, epoch, margin_dict):
-    net = torch.load(net_path)
-
     test_dataset = TestDataset(file_name, test_name)
     test_dataloader = DataLoader(test_dataset, shuffle=False, num_workers=1, batch_size=1000)
 
+    # net = torch.load(net_path)
+    net = Network(args.dim, test_dataset.entity_len, test_dataset.rel_len)
+    net.load_state_dict(torch.load(net_path))
+    net.eval()
 
     dict_right1 = defaultdict(int)
     dict_right2 = defaultdict(int)
@@ -93,12 +95,6 @@ def test(file_name, net_path, test_name, out_path, epoch, margin_dict):
 
     for i, data in enumerate(test_dataloader, 0):
         data_r, data_e, rel, t, flag = data
-        if torch.cuda.is_available() == True:
-            data_r = data_r.cuda()
-            data_e = data_e.cuda()
-            rel = rel.cuda()
-            t = t.cuda()
-            flag = flag.cuda()
 
         vh = net.get_vh(data_r, data_e)
         vr = net.get_vr(rel)
@@ -106,8 +102,6 @@ def test(file_name, net_path, test_name, out_path, epoch, margin_dict):
 
         dist = pdist(vh + vr, vt)
 
-        if torch.cuda.is_available() == True:
-            rel = rel.cpu()
         rel = rel.numpy()
 
         data_len = t.size(0)
@@ -141,12 +135,12 @@ def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('-dim', type=int, default=50, help='entity and relation sharing embedding dimension')
     parser.add_argument('-margin_pos', type=int, default=1, help='margin of positive triplets')
-    parser.add_argument('-margin_neg', type=int, default=5, help='margin of negative triplets')
-    parser.add_argument('-rate', type=float, default=0.005, help='learning rate')
-    parser.add_argument('-batch', type=int, default=100, help='batch size')
-    parser.add_argument('-epoch', type=int, default=150, help='number of training epoch')
+    parser.add_argument('-margin_neg', type=int, default=100, help='margin of negative triplets')
+    parser.add_argument('-rate', type=float, default=0.0001, help='learning rate')
+    parser.add_argument('-batch', type=int, default=1000, help='batch size')
+    parser.add_argument('-epoch', type=int, default=300, help='number of training epoch')
     parser.add_argument('-method', type=str, default='bern', help='stratege of constructing negative triplets')
-    parser.add_argument('-data', type=str, default='WN11', help='dataset of the model')
+    parser.add_argument('-data', type=str, default='FB13', help='dataset of the model')
     args = parser.parse_args()
 
     return args

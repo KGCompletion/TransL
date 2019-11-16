@@ -76,10 +76,15 @@ class ValidDataset(Dataset):
         return self.len
 
 def valid(file_name, net_path, test_name, start, end):
-    net = torch.load(net_path)
-
     valid_dataset = ValidDataset(file_name, test_name)
     valid_dataloader = DataLoader(valid_dataset, shuffle=False, num_workers=1, batch_size=1000)
+
+    # net = torch.load(net_path)
+    net = Network(args.dim, valid_dataset.entity_len, valid_dataset.rel_len)
+    net.load_state_dict(torch.load(net_path))
+    net.eval()
+
+    
 
     pdist = nn.PairwiseDistance(p=2)
 
@@ -87,11 +92,6 @@ def valid(file_name, net_path, test_name, start, end):
 
     for i, data in enumerate(valid_dataloader, 0):
         data_r, data_e, rel, t, flag = data
-        if torch.cuda.is_available() == True:
-            data_r = data_r.cuda()
-            data_e = data_e.cuda()
-            rel = rel.cuda()
-            t = t.cuda()
 
         vh = net.get_vh(data_r, data_e)
         vr = net.get_vr(rel)
@@ -99,9 +99,6 @@ def valid(file_name, net_path, test_name, start, end):
 
         dist = pdist(vh + vr, vt)
 
-        if torch.cuda.is_available() == True:
-            dist = dist.cpu()
-            rel = rel.cpu()
         dist = dist.data.numpy()
         rel = rel.numpy()
         flag = flag.numpy()
@@ -142,14 +139,14 @@ def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('-dim', type=int, default=50, help='entity and relation sharing embedding dimension')
     parser.add_argument('-margin_pos', type=int, default=1, help='margin of positive triplets')
-    parser.add_argument('-margin_neg', type=int, default=5, help='margin of negative triplets')
-    parser.add_argument('-rate', type=float, default=0.005, help='learning rate')
-    parser.add_argument('-batch', type=int, default=100, help='batch size')
-    parser.add_argument('-epoch', type=int, default=150, help='number of training epoch')
+    parser.add_argument('-margin_neg', type=int, default=100, help='margin of negative triplets')
+    parser.add_argument('-rate', type=float, default=0.0001, help='learning rate')
+    parser.add_argument('-batch', type=int, default=1000, help='batch size')
+    parser.add_argument('-epoch', type=int, default=300, help='number of training epoch')
     parser.add_argument('-method', type=str, default='bern', help='stratege of constructing negative triplets')
-    parser.add_argument('-data', type=str, default='WN11', help='dataset of the model')
+    parser.add_argument('-data', type=str, default='FB13', help='dataset of the model')
     parser.add_argument('-start', type=int, default=0, help='beginning of the threshold')
-    parser.add_argument('-end', type=int, default=10, help='end of the threshold')
+    parser.add_argument('-end', type=int, default=110, help='end of the threshold')
     args = parser.parse_args()
 
     return args
@@ -162,32 +159,6 @@ if __name__ == '__main__':
     epoch = args.epoch
     start = args.start
     end = args.end
-
-    # file_name = 'WN11'
-    # net_name = '20-1-10(0.01-100)-bern'
-    # epoch = 750
-    # start = 0
-    # end = 20
-
-    # file_name = 'WN11'
-    # net_name = '20-1-10(0.01-100)-unif'
-    # epoch = 600
-    # start = 0
-    # end = 20
-
-    # file_name = 'FB13'
-    # net_name = '50-1-100(0.0001-1000)-bern'
-    # epoch = 300
-    # start = 0
-    # end = 120
-
-    # file_name = 'FB13'
-    # net_name = '50-1-100(0.0001-1000)-unif'
-    # epoch = 80
-    # start = 0
-    # end = 120
-
-
 
     test_name = 'valid.txt'
     net_path = 'out/' + file_name + '/' + net_name + '/net-' + str(epoch) + '.pt'

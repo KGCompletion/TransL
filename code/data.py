@@ -44,6 +44,48 @@ def load_data(file_path, entity2id, rel2id):
 
     return entity2data_list, rel2entity_list
 
+def load_allData(file_name, entity2id, rel2id):
+    hr2t_list = defaultdict(list)
+    tr2h_list = defaultdict(list)
+
+    with open('../' + file_name + '/train.txt') as f:
+        lines = f.readlines()
+        for line in lines:
+            line = line.strip().split('\t')
+            e1, rel, e2 = line[0], line[1], line[2]
+            e1 = entity2id[e1]
+            rel = rel2id[rel]
+            e2 = entity2id[e2]
+
+            hr2t_list[(e1, rel)].append(e2)
+            tr2h_list[(e2, rel)].append(e1)
+
+    with open('../' + file_name + '/valid.txt') as f:
+        lines = f.readlines()
+        for line in lines:
+            line = line.strip().split('\t')
+            e1, rel, e2 = line[0], line[1], line[2]
+            e1 = entity2id[e1]
+            rel = rel2id[rel]
+            e2 = entity2id[e2]
+
+            hr2t_list[(e1, rel)].append(e2)
+            tr2h_list[(e2, rel)].append(e1)
+
+    with open('../' + file_name + '/test.txt') as f:
+        lines = f.readlines()
+        for line in lines:
+            line = line.strip().split('\t')
+            e1, rel, e2 = line[0], line[1], line[2]
+            e1 = entity2id[e1]
+            rel = rel2id[rel]
+            e2 = entity2id[e2]
+
+            hr2t_list[(e1, rel)].append(e2)
+            tr2h_list[(e2, rel)].append(e1)
+    
+    return hr2t_list, tr2h_list
+
 def load_train_data(file_path, entity2id, rel2id):
     id2e1 = []
     id2e2 = []
