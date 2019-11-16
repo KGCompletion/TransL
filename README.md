@@ -10,6 +10,7 @@ Link prediction on FB15k-237:
 |bern|0.248|0.355|0.260|0.389|0.551|
 
 Triplet classification on WN11 and FB13:
+
 ||WN11|FB13|
 |:---|:---|:---|
 |unif|0.861|0.838|
