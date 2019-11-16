@@ -2,11 +2,14 @@
 
 The source code of paper "Translating Embedding with Local Connection for Knowledge Graph Completion".
 
+Link prediction on FB15k-237:
+
 ||Raw MRR|Filter MRR|Hits@1|Hits@3|Hits@10|
 |:---|:---|:---|:---|:---|:---|
 |unif|0.227|0.342|0.244|0.379|0.535|
 |bern|0.248|0.355|0.260|0.389|0.551|
 
+Triplet classification on WN11 and FB13:
 ||WN11|FB13|
 |:---|:---|:---|
 |unif|0.861|0.838|
